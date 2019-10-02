@@ -3,6 +3,38 @@
     <v-layout column>
       <v-flex>
         <v-card>
+          <v-card-title>
+            How to Contribute
+          </v-card-title>
+          <v-card-text>
+            <ol>
+              <li>Create a question using the below form</li>
+              <ol type="a">
+                <li>
+                  A question has four answers, each with some combination of weights indicating which House the question is targeting
+                </li>
+                <li>
+                  Weights are relative to each other within the question, and don't have to add up to anything in particular
+                </li>
+              </ol>
+              <li>
+                Copy the generated code to your clipboard
+              </li>
+              <li>
+                Paste what you've copied at the end of the <tt>questions</tt> array <a href="https://github.com/nrabins/hp-quiz/edit/master/src/data/questions.ts" target="_blank">here</a>
+              </li>
+              <li>
+                Repeat the above steps to make more questions, if desired
+              </li>
+              <li>
+                Commit your changes using the interface at the bottom of the github edit page
+              </li>
+            </ol>
+          </v-card-text>
+        </v-card>
+      </v-flex>
+      <v-flex>
+        <v-card>
           <v-card-text>
             <v-layout text-center wrap>
               <v-flex xs12>
