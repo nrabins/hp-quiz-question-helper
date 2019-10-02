@@ -6,7 +6,7 @@
           <v-card-text>
             <v-layout text-center wrap>
               <v-flex xs12>
-                <v-text-field v-model="question" abel="Question" />
+                <v-text-field v-model="question" ref="question" label="Question" />
               </v-flex>
               <v-flex xs12>
                 <v-layout>
@@ -25,6 +25,10 @@
                       :class="answers[index].weights.gryffindor > 0 ? 'gryffindor' : ''"
                       label="Gryffindor"
                       color="red darken-3"
+                      type="number"
+                      min="0"
+                      step=".1"
+                      max="1"
                     />
                   </v-flex>
                   <v-flex xs1>
@@ -32,6 +36,10 @@
                       v-model="answers[index].weights.ravenclaw"
                       label="Ravenclaw"
                       color="blue darken-2"
+                      type="number"
+                      min="0"
+                      step=".1"
+                      max="1"
                     />
                   </v-flex>
                   <v-flex xs1>
@@ -39,6 +47,10 @@
                       v-model="answers[index].weights.slytherin"
                       label="Slytherin"
                       color="green darken-3"
+                      type="number"
+                      min="0"
+                      step=".1"
+                      max="1"
                     />
                   </v-flex>
                   <v-flex xs1>
@@ -46,6 +58,10 @@
                       v-model="answers[index].weights.hufflepuff"
                       label="Hufflepuff"
                       color="lime darken-2"
+                      type="number"
+                      min="0"
+                      step=".1"
+                      max="1"
                     />
                   </v-flex>
                 </v-layout>
@@ -57,12 +73,12 @@
       <v-flex>
         <v-card>
           <v-card-text>
-              <code>
-                {{generatedCode}}
-              </code>
+            <pre class="code" ref="generatedCode">{{generatedCode}}</pre>
           </v-card-text>
           <v-card-actions>
-            <v-btn>Copy to Clipboard</v-btn>
+            <v-btn @click="resetForm">Reset Form</v-btn>
+            <v-spacer />
+            <v-btn @click="copyToClipboard">Copy to Clipboard</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -81,50 +97,72 @@ const houses = {
 export default {
   data() {
     return {
-      question: "Are you Harry Potter?",
-      answers: [
-        { text: "Yes", weights: { gryffindor: 0.7, slytherin: 0.3 } },
-        { text: "...yes (sneakily)", weights: { slytherin: 1 } },
-        {
-          text: "No",
-          weights: {
-            ravenclaw: 0.25,
-            gryffindor: 0.25,
-            slytherin: 0.25,
-            hufflepuff: 0.25
-          }
-        },
-        { text: "I wish", weights: { hufflepuff: 1 } }
-      ]
+      question: "",
+      answers: []
     };
+  },
+  mounted() {
+    this.resetForm();
   },
   computed: {
     generatedCode() {
       const lines = [];
-      lines.push(`new Question(\`${this.sanitize(this.question)}\`, [`);
+      lines.push(`  new Question(\`${this.sanitize(this.question)}\`, [`);
       this.answers.forEach(answer => {
-        let weightStr = Object.keys(answer.weights)
-          .map(key => {
-            return `new Weight(House.${houses[key]}, ${answer.weights[key]})`;
-          })
-          .join(", ");
+        const weightKeysWithValues = Object.keys(answer.weights).filter(
+          key => answer.weights[key] > 0
+        );
+
+        let weightStr = "";
+
+        if (weightKeysWithValues.length === 1) {
+          weightStr = `new Weight(House.${houses[weightKeysWithValues[0]]})`;
+        } else {
+          weightStr = weightKeysWithValues
+            .map(key => {
+              return `new Weight(House.${houses[key]}, ${answer.weights[key]})`;
+            })
+            .join(", ");
+        }
         lines.push(
-          `  new Answer(\`${this.sanitize(answer.text)}\`, [${weightStr}]),`
+          `    new Answer(\`${this.sanitize(answer.text)}\`, [${weightStr}]),`
         );
       });
-      lines.push("])");
+      lines.push("  ]),");
       return lines.join("\n");
     }
   },
   methods: {
     sanitize(str) {
       return str.replace(/`/g, "");
+    },
+    copyToClipboard() {
+      const range = document.createRange();
+      range.selectNodeContents(this.$refs.generatedCode);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.execCommand("copy");
+      sel.removeAllRanges();
+    },
+    resetForm() {
+      this.question = "";
+      this.answers = [
+        { text: "", weights: {} },
+        { text: "", weights: {} },
+        { text: "", weights: {} },
+        { text: "", weights: {} }
+      ];
+      this.$refs.question.focus();
     }
   }
 };
 </script>
 
 <style>
+.code {
+  overflow: auto;
+}
 /* .gryffindor input {
   background-color: #C62828 ;
   text-align: center;
